@@ -16,7 +16,8 @@ using static CultureInfoAndThreads.DotNetVersion;
 
 namespace CultureInfoAndThreads
 {
-    public static class DotNetVersion {
+    public static class DotNetVersion
+    {
 
         public static void ShowVersionHeader()
         {
@@ -113,7 +114,42 @@ namespace CultureInfoAndThreads
         }
     }
 
-    public class EndpointBehavior : IEndpointBehavior
+    public class WorkerThreadPoolSynchronizer : SynchronizationContext
+    {
+        public override void Post(SendOrPostCallback d, object state)
+        {
+            ThreadPool.QueueUserWorkItem(new WaitCallback(d), state);
+        }
+
+        public override void Send(SendOrPostCallback d, object state)
+        {
+            d(state);
+        }
+    }
+
+    public class CustomSynchronizationContextContractBehavior : IContractBehavior
+    {
+        private static WorkerThreadPoolSynchronizer synchronizer = new WorkerThreadPoolSynchronizer();
+
+        void IContractBehavior.AddBindingParameters(ContractDescription contractDescription, ServiceEndpoint endpoint, BindingParameterCollection bindingParameters)
+        {
+        }
+
+        void IContractBehavior.ApplyClientBehavior(ContractDescription contractDescription, ServiceEndpoint endpoint, ClientRuntime clientRuntime)
+        {
+        }
+
+        void IContractBehavior.ApplyDispatchBehavior(ContractDescription contractDescription, ServiceEndpoint endpoint, DispatchRuntime dispatchRuntime)
+        {
+            dispatchRuntime.SynchronizationContext = synchronizer;
+        }
+
+        void IContractBehavior.Validate(ContractDescription contractDescription, ServiceEndpoint endpoint)
+        {
+        }
+    }
+
+    public class CultureInfoEndpointBehavior : IEndpointBehavior
     {
         void IEndpointBehavior.AddBindingParameters(ServiceEndpoint endpoint, BindingParameterCollection bindingParameters)
         {
@@ -128,7 +164,7 @@ namespace CultureInfoAndThreads
             endpointDispatcher
                 .DispatchRuntime.Operations
                 .Select(i => i.ParameterInspectors).ToList()
-                .ForEach(pi => pi.Add(new ParameterInspector()));
+                .ForEach(pi => pi.Add(new CultureInfoParameterInspector()));
         }
 
         void IEndpointBehavior.Validate(ServiceEndpoint endpoint)
@@ -136,7 +172,7 @@ namespace CultureInfoAndThreads
         }
     }
 
-    public class ParameterInspector : IParameterInspector
+    public class CultureInfoParameterInspector : IParameterInspector
     {
         void IParameterInspector.AfterCall(string operationName, object[] outputs, object returnValue, object correlationState)
         {
@@ -157,14 +193,14 @@ namespace CultureInfoAndThreads
     [ServiceContract]
     public interface IMyServiceClient : IClientChannel
     {
-        [OperationContract(Action = ServiceAction, ReplyAction = ServiceReplyAction)]
+        [OperationContract(Action = WorkAction, ReplyAction = WorkReplyAction)]
         Task WorkAsync();
     }
 
     [ServiceContract]
     public interface IMyService
     {
-        [OperationContract(Action = ServiceAction, ReplyAction = ServiceReplyAction)]
+        [OperationContract(Action = WorkAction, ReplyAction = WorkReplyAction)]
         void Work();
     }
 
@@ -172,15 +208,14 @@ namespace CultureInfoAndThreads
     {
         public void Work()
         {
-
             DumpThreadInfo();
         }
     }
 
     public static class Program
     {
-        public const string ServiceAction = nameof(IMyService.Work);
-        public const string ServiceReplyAction = nameof(IMyService.Work) + "Response";
+        public const string WorkAction = nameof(IMyService.Work);
+        public const string WorkReplyAction = nameof(IMyService.Work) + "Response";
 
         public static void DumpThreadInfo()
         {
@@ -252,7 +287,9 @@ namespace CultureInfoAndThreads
 
             var serviceEndpoint = serviceHost.AddServiceEndpoint(typeof(IMyService), binding, addressUri);
 
-            serviceEndpoint.Behaviors.Add(new EndpointBehavior());
+            //serviceEndpoint.Contract.ContractBehaviors.Add(new ContractBehavior());
+
+            serviceEndpoint.Behaviors.Add(new CultureInfoEndpointBehavior());
 
             serviceHost.Open();
 
