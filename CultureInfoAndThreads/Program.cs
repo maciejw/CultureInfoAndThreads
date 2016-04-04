@@ -114,42 +114,7 @@ namespace CultureInfoAndThreads
         }
     }
 
-    public class WorkerThreadPoolSynchronizer : SynchronizationContext
-    {
-        public override void Post(SendOrPostCallback d, object state)
-        {
-            ThreadPool.QueueUserWorkItem(new WaitCallback(d), state);
-        }
-
-        public override void Send(SendOrPostCallback d, object state)
-        {
-            d(state);
-        }
-    }
-
-    public class CustomSynchronizationContextContractBehavior : IContractBehavior
-    {
-        private static WorkerThreadPoolSynchronizer synchronizer = new WorkerThreadPoolSynchronizer();
-
-        void IContractBehavior.AddBindingParameters(ContractDescription contractDescription, ServiceEndpoint endpoint, BindingParameterCollection bindingParameters)
-        {
-        }
-
-        void IContractBehavior.ApplyClientBehavior(ContractDescription contractDescription, ServiceEndpoint endpoint, ClientRuntime clientRuntime)
-        {
-        }
-
-        void IContractBehavior.ApplyDispatchBehavior(ContractDescription contractDescription, ServiceEndpoint endpoint, DispatchRuntime dispatchRuntime)
-        {
-            dispatchRuntime.SynchronizationContext = synchronizer;
-        }
-
-        void IContractBehavior.Validate(ContractDescription contractDescription, ServiceEndpoint endpoint)
-        {
-        }
-    }
-
-    public class CultureInfoEndpointBehavior : IEndpointBehavior
+    public class TestCultureInfoEndpointBehavior : IEndpointBehavior
     {
         void IEndpointBehavior.AddBindingParameters(ServiceEndpoint endpoint, BindingParameterCollection bindingParameters)
         {
@@ -164,7 +129,7 @@ namespace CultureInfoAndThreads
             endpointDispatcher
                 .DispatchRuntime.Operations
                 .Select(i => i.ParameterInspectors).ToList()
-                .ForEach(pi => pi.Add(new CultureInfoParameterInspector()));
+                .ForEach(pi => pi.Add(new TestCultureInfoParameterInspector()));
         }
 
         void IEndpointBehavior.Validate(ServiceEndpoint endpoint)
@@ -172,41 +137,102 @@ namespace CultureInfoAndThreads
         }
     }
 
-    public class CultureInfoParameterInspector : IParameterInspector
+    public class TestCultureInfoParameterInspector : IParameterInspector
     {
+        private const string TestCulture = "pl-PL";
+
         void IParameterInspector.AfterCall(string operationName, object[] outputs, object returnValue, object correlationState)
         {
         }
 
         object IParameterInspector.BeforeCall(string operationName, object[] inputs)
         {
-            var cultureInfo = new CultureInfo("pl-PL");
+            switch (inputs.OfType<TestCase>().First())
+            {
+                case TestCase.Case1:
+                    Case1();
+                    break;
+                case TestCase.Case2:
+                    Case2();
+                    break;
+                case TestCase.Case3:
+                    Case3();
+                    break;
+                case TestCase.Case4:
+                    Case4();
+                    break;
+                default:
+                    break;
+            }
+
+            return null;
+        }
+
+
+
+        private void Case1()
+        {
+            var cultureInfo = new CultureInfo(TestCulture);
             var thread = Thread.CurrentThread;
 
             thread.CurrentCulture = cultureInfo;
             thread.CurrentUICulture = cultureInfo;
-
-            return null;
         }
+        private void Case2()
+        {
+            var cultureInfo = CultureInfo.GetCultureInfo(TestCulture);
+            var thread = Thread.CurrentThread;
+
+            thread.CurrentCulture = cultureInfo;
+            thread.CurrentUICulture = cultureInfo;
+        }
+        private void Case3()
+        {
+            var cultureInfo = new CultureInfo(TestCulture);
+
+            CultureInfo.CurrentCulture = cultureInfo;
+            CultureInfo.CurrentUICulture = cultureInfo;
+        }
+        private void Case4()
+        {
+            var cultureInfo = CultureInfo.GetCultureInfo(TestCulture);
+
+            CultureInfo.CurrentCulture = cultureInfo;
+            CultureInfo.CurrentUICulture = cultureInfo;
+        }
+    }
+    public enum TestCase
+    {
+        Case1,
+        Case2,
+        Case3,
+        Case4
     }
 
     [ServiceContract]
-    public interface IMyServiceClient : IClientChannel
+    public interface IMyServiceClientAsync : IClientChannel
     {
-        [OperationContract(Action = WorkAction, ReplyAction = WorkReplyAction)]
-        Task WorkAsync();
+        [OperationContract(Action = nameof(IMyService.Work), ReplyAction = nameof(IMyService.Work))]
+        Task WorkAsync(TestCase @case);
+    }
+
+    [ServiceContract]
+    public interface IMyServiceClient: IClientChannel
+    {
+        [OperationContract(Action = nameof(IMyService.Work), ReplyAction = nameof(IMyService.Work))]
+        void Work(TestCase @case);
     }
 
     [ServiceContract]
     public interface IMyService
     {
-        [OperationContract(Action = WorkAction, ReplyAction = WorkReplyAction)]
-        void Work();
+        [OperationContract(Action = nameof(Work), ReplyAction = nameof(Work))]
+        void Work(TestCase @case);
     }
 
     public class MyService : IMyService
     {
-        public void Work()
+        public void Work(TestCase @case)
         {
             DumpThreadInfo();
         }
@@ -214,14 +240,11 @@ namespace CultureInfoAndThreads
 
     public static class Program
     {
-        public const string WorkAction = nameof(IMyService.Work);
-        public const string WorkReplyAction = nameof(IMyService.Work) + "Response";
-
         public static void DumpThreadInfo()
         {
             var thread = Thread.CurrentThread;
 
-            Console.WriteLine($"{thread.ManagedThreadId} {thread.CurrentUICulture} {thread.CurrentCulture}");
+            Console.WriteLine($"ManagedThreadId: {thread.ManagedThreadId} CurrentUICulture: {thread.CurrentUICulture} CurrentCulture: {thread.CurrentCulture} TestKey resource: {TestResource.TestKey}");
         }
 
         private static NetTcpBinding binding;
@@ -240,7 +263,10 @@ namespace CultureInfoAndThreads
             commands = new Dictionary<string, Action>
             {
                 { nameof(ShowFrameworkVersionInfo), ShowFrameworkVersionInfo },
-                { nameof(StartClient), StartClient },
+                { nameof(StartClientCase1), StartClientCase1 },
+                { nameof(StartClientCase2), StartClientCase2 },
+                { nameof(StartClientCase3), StartClientCase3 },
+                { nameof(StartClientCase4), StartClientCase4 },
                 { nameof(StartServer), StartServer },
                 { nameof(Help), Help },
             };
@@ -287,9 +313,7 @@ namespace CultureInfoAndThreads
 
             var serviceEndpoint = serviceHost.AddServiceEndpoint(typeof(IMyService), binding, addressUri);
 
-            //serviceEndpoint.Contract.ContractBehaviors.Add(new ContractBehavior());
-
-            serviceEndpoint.Behaviors.Add(new CultureInfoEndpointBehavior());
+            serviceEndpoint.Behaviors.Add(new TestCultureInfoEndpointBehavior());
 
             serviceHost.Open();
 
@@ -312,18 +336,30 @@ namespace CultureInfoAndThreads
             Console.WriteLine("Server stopped.");
         }
 
-        private static void StartClient()
+        private static void StartClientCase1()
         {
-            Task.WaitAll(ClientCall());
+            Task.WaitAll(ClientCallAsync(TestCase.Case1));
+        }
+        private static void StartClientCase2()
+        {
+            Task.WaitAll(ClientCallAsync(TestCase.Case2));
+        }
+        private static void StartClientCase3()
+        {
+            Task.WaitAll(ClientCallAsync(TestCase.Case3));
+        }
+        private static void StartClientCase4()
+        {
+            Task.WaitAll(ClientCallAsync(TestCase.Case4));
         }
 
-        private async static Task ClientCall()
+        private async static Task ClientCallAsync(TestCase @case)
         {
-            IMyServiceClient client = ChannelFactory<IMyServiceClient>.CreateChannel(binding, address);
+            var client = ChannelFactory<IMyServiceClientAsync>.CreateChannel(binding, address);
 
             client.Open();
 
-            await client.WorkAsync();
+            await client.WorkAsync(@case);
 
             client.Close();
         }
