@@ -85,16 +85,16 @@ server log
 ```
 ManagedThreadId: 1 CurrentUICulture: en-US CurrentCulture: pl-PL TestKey resource: Test Value
 Server started. Press Ctrl+C to quit.
-ManagedThreadId: 3 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: Wartoœæ testowa
+ManagedThreadId: 3 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: WartoÅ›Ä‡ testowa
 Waiting for requests... Press Ctrl+C to quit.
-ManagedThreadId: 3 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: Wartoœæ testowa
-ManagedThreadId: 8 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: Wartoœæ testowa
-ManagedThreadId: 8 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: Wartoœæ testowa
-ManagedThreadId: 8 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: Wartoœæ testowa
-ManagedThreadId: 8 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: Wartoœæ testowa
-ManagedThreadId: 3 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: Wartoœæ testowa
-ManagedThreadId: 3 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: Wartoœæ testowa
-ManagedThreadId: 8 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: Wartoœæ testowa
+ManagedThreadId: 3 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: WartoÅ›Ä‡ testowa
+ManagedThreadId: 8 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: WartoÅ›Ä‡ testowa
+ManagedThreadId: 8 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: WartoÅ›Ä‡ testowa
+ManagedThreadId: 8 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: WartoÅ›Ä‡ testowa
+ManagedThreadId: 8 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: WartoÅ›Ä‡ testowa
+ManagedThreadId: 3 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: WartoÅ›Ä‡ testowa
+ManagedThreadId: 3 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: WartoÅ›Ä‡ testowa
+ManagedThreadId: 8 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: WartoÅ›Ä‡ testowa
 Waiting for requests... Press Ctrl+C to quit.
 Server stopped.
 
@@ -116,13 +116,13 @@ server log
 ```
 ManagedThreadId: 1 CurrentUICulture: en-US CurrentCulture: pl-PL TestKey resource: Test Value
 Server started. Press Ctrl+C to quit.
-ManagedThreadId: 4 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: Wartoœæ testowa
-ManagedThreadId: 6 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: Wartoœæ testowa
+ManagedThreadId: 4 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: WartoÅ›Ä‡ testowa
+ManagedThreadId: 6 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: WartoÅ›Ä‡ testowa
 ManagedThreadId: 6 CurrentUICulture: en-US CurrentCulture: pl-PL TestKey resource: Test Value
 ManagedThreadId: 6 CurrentUICulture: en-US CurrentCulture: pl-PL TestKey resource: Test Value
 ManagedThreadId: 6 CurrentUICulture: en-US CurrentCulture: pl-PL TestKey resource: Test Value
 ManagedThreadId: 6 CurrentUICulture: en-US CurrentCulture: pl-PL TestKey resource: Test Value
-ManagedThreadId: 7 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: Wartoœæ testowa
+ManagedThreadId: 7 CurrentUICulture: pl-PL CurrentCulture: pl-PL TestKey resource: WartoÅ›Ä‡ testowa
 Waiting for requests... Press Ctrl+C to quit.
 ManagedThreadId: 6 CurrentUICulture: en-US CurrentCulture: pl-PL TestKey resource: Test Value
 ManagedThreadId: 6 CurrentUICulture: en-US CurrentCulture: pl-PL TestKey resource: Test Value
