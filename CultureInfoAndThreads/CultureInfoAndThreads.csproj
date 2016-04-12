@@ -84,13 +84,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands.cs" />
+    <Compile Include="SimpleConsoleService.cs" />
+    <Compile Include="DotNetVersion.cs" />
+    <Compile Include="Helpers.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TcpTest.cs" />
     <Compile Include="TestResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>TestResource.resx</DependentUpon>
     </Compile>
+    <Compile Include="ThreadPoolTest.cs" />
+    <Compile Include="WcfTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
